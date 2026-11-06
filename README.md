@@ -175,3 +175,17 @@ See `.env.example` for required variables:
 - Frontend is minimal and functional without animations or visual polish
 - Hindi translation and voice input not implemented
 - No authentication or authorization; single-user/local-prototype only
+## M2.1B — Legal Knowledge Base
+
+The `M2.1B/` directory contains the legal research knowledge base for tenant-landlord
+security-deposit disputes in India:
+
+- `provision_inventory.md` — provision-level inventory (central + state/UT statutes)
+- `source_register.md` — source register
+- `state_applicability_table.md` — state/UT applicability table
+- `temporal_metadata.md` — temporal metadata recommendations
+- `evaluation_dataset.md` — clean evaluation dataset (32 cases)
+- `research_notes/` — methodology, verification backlog, open questions
+- `sources/` — cached reference excerpts
+
+See `M2.1B/INDEX.md` for the full index.
