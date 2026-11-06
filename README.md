@@ -144,6 +144,29 @@ See `.env.example` for required variables:
 11. ✅ README contains installation and execution instructions
 12. ✅ `.env.example` documents required environment variables
 
+
+## M1.2 Reliability and Data Integrity Notes
+
+- Fact corrections: the intake agent distinguishes explicit user corrections
+  (`corrections`) from ordinary new information (`extracted_updates`). Conflicting
+  values preserve the existing fact and are reported in `confirmation_needed`
+  until the user confirms.
+- Fact provenance: each fact records `source` (`model` or `user`),
+  `confirmed` (boolean), and `turn`. Existing SQLite records without
+  provenance are treated as having an empty provenance map.
+- Atomic persistence: a chat turn reads the case, calls the LLM outside any
+  transaction, then persists the user message, updated facts, and assistant
+  message in a single transaction. A failed LLM call leaves no orphaned
+  message or partial fact update. Optimistic versioning rejects concurrent
+  conflicting updates with HTTP 409.
+- LLM reliability: the Gemini provider uses a bounded timeout, retries bounded
+  retryable failures (HTTP 429 / 503) with exponential backoff, and does not
+  retry timeouts, invalid JSON, or schema-validation failures.
+- Authentication/authorization: none. This application is a single-user /
+  local-prototype only and must not be deployed on an untrusted or multi-user
+  network. CORS is restricted to the local frontend origins
+  (`http://localhost:3000`, `http://127.0.0.1:3000`).
+
 ## Known Limitations
 
 - Only supports `security_deposit_dispute` case type
@@ -151,3 +174,4 @@ See `.env.example` for required variables:
 - LLM integration requires a Gemini API key for real usage (mock provider for tests)
 - Frontend is minimal and functional without animations or visual polish
 - Hindi translation and voice input not implemented
+- No authentication or authorization; single-user/local-prototype only

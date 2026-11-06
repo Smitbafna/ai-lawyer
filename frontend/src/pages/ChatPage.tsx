@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react"
-import { NewCaseButton } from "../components/NewCaseButton"
 import { ChatPanel } from "../components/ChatPanel"
 import { CaseSummary } from "../components/CaseSummary"
 import { createCase, getCase } from "../services/api"

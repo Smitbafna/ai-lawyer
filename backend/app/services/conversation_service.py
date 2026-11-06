@@ -17,8 +17,7 @@ def get_or_create_conversation(db: Session, case_id: str) -> Conversation:
     if not conversation:
         conversation = Conversation(case_id=case_id)
         db.add(conversation)
-        db.commit()
-        db.refresh(conversation)
+        db.flush()
     return conversation
 
 
@@ -27,8 +26,7 @@ def add_message(
 ) -> Message:
     message = Message(conversation_id=conversation_id, role=role, content=content)
     db.add(message)
-    db.commit()
-    db.refresh(message)
+    db.flush()
     return message
 
 

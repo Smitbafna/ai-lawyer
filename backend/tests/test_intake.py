@@ -60,7 +60,7 @@ async def test_extract_facts_from_initial_complaint(intake_agent, mock_provider)
 @pytest.mark.asyncio
 async def test_merge_does_not_overwrite_known_facts(intake_agent, mock_provider, existing_case):
     """Test that known facts are not overwritten with null/empty values."""
-    merged = IntakeAgent.merge_updates(
+    merged, _ = IntakeAgent.merge_updates(
         existing_case.structured_facts,
         {"security_deposit_amount": None, "jurisdiction": {"city": None}},
     )
@@ -71,7 +71,7 @@ async def test_merge_does_not_overwrite_known_facts(intake_agent, mock_provider,
 @pytest.mark.asyncio
 async def test_merge_adds_new_facts(intake_agent, mock_provider, existing_case):
     """Test that new facts are added to existing facts."""
-    merged = IntakeAgent.merge_updates(
+    merged, _ = IntakeAgent.merge_updates(
         existing_case.structured_facts,
         {"vacating_date": "2024-01-15", "property_address": "123 Main St"},
     )
@@ -121,12 +121,14 @@ async def test_handle_contradictory_information(intake_agent, mock_provider):
         )
     )
 
-    merged = IntakeAgent.merge_updates(
+    merged, conflicts = IntakeAgent.merge_updates(
         case.structured_facts,
         mock_provider._structured_response.extracted_updates,
     )
     # First non-null value wins (existing value kept)
     assert merged["security_deposit_amount"] == 25000
+    # Conflict detected because new value differs from existing
+    assert "security_deposit_amount" in conflicts
 
 
 @pytest.mark.asyncio

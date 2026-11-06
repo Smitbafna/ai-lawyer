@@ -57,6 +57,8 @@ class CaseResponse(BaseModel):
     status: str
     structured_facts: Optional[dict[str, Any]]
     missing_information: Optional[list[str]]
+    fact_provenance: Optional[dict[str, Any]]
+    version: int
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 

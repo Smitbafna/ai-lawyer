@@ -10,6 +10,24 @@ class LLMProviderError(Exception):
     pass
 
 
+class LLMTimeoutError(LLMProviderError):
+    """Raised when an LLM call exceeds the configured timeout."""
+
+    pass
+
+
+class LLMRateLimitError(LLMProviderError):
+    """Raised when the provider indicates rate limiting."""
+
+    pass
+
+
+class LLMServiceError(LLMProviderError):
+    """Raised for transient upstream service failures."""
+
+    pass
+
+
 class LLMProvider(ABC, Generic[T]):
     """Provider-independent interface for LLM interactions."""
 

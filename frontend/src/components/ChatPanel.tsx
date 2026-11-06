@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { Message } from "./Message"
-import type { Message as MessageType, ChatRequest } from "../types"
+import type { Message as MessageType } from "../types"
 import { sendChatMessage, getMessages } from "../services/api"
 
 interface ChatPanelProps {

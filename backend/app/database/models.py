@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text, JSON
+from sqlalchemy import Column, String, DateTime, ForeignKey, Text, JSON, Integer
 from sqlalchemy.orm import relationship
 
 from app.database.connection import Base
@@ -22,6 +22,8 @@ class Case(Base):
     status = Column(String, nullable=False, default="intake_in_progress")
     structured_facts = Column(JSON, nullable=True, default=dict)
     missing_information = Column(JSON, nullable=True, default=list)
+    fact_provenance = Column(JSON, nullable=True, default=dict)
+    version = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
