@@ -1,0 +1,46 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f3f4f6; }
+
+.app { display: flex; height: 100vh; }
+.sidebar { width: 320px; background: #fff; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; }
+.sidebar-header { padding: 1rem; border-bottom: 1px solid #e5e7eb; }
+.sidebar-title { font-weight: 700; font-size: 1.125rem; color: #111827; }
+.sidebar-subtitle { font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem; }
+.sidebar-content { padding: 1rem; flex: 1; overflow-y: auto; }
+.main { flex: 1; display: flex; flex-direction: column; background: #fff; }
+
+.btn-new { width: 100%; padding: 0.5rem 1rem; background: #2563eb; color: #fff; border: none; border-radius: 0.375rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.btn-new:hover { background: #1d4ed8; }
+
+.case-badge { margin-top: 1rem; padding: 0.75rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.375rem; }
+.case-badge p { margin: 0; font-size: 0.875rem; color: #1e40af; }
+.case-badge p:nth-child(2) { font-size: 0.75rem; color: #1e40af; margin-top: 0.25rem; }
+
+.empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #6b7280; }
+
+.chat-area { flex: 1; overflow-y: auto; background: #fff; }
+.messages-container { padding: 1rem; overflow-y: auto; }
+.message { margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.5rem; max-width: 80%; }
+.message-user { background: #dbeafe; color: #1e3a8a; margin-left: auto; }
+.message-assistant { background: #f3f4f6; color: #111827; margin-right: auto; }
+.message-meta { font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem; }
+
+.chat-form { padding: 1rem; border-top: 1px solid #e5e7eb; background: #f9fafb; display: flex; gap: 0.5rem; }
+.chat-form input { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; outline: none; }
+.chat-form input:focus { border-color: #2563eb; }
+.chat-form button { padding: 0.5rem 1rem; background: #2563eb; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 500; }
+.chat-form button:hover { background: #1d4ed8; }
+.chat-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.error-msg { padding: 0.75rem; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; border-radius: 0.375rem; font-size: 0.875rem; margin: 1rem; }
+.loading-msg { padding: 1rem; color: #6b7280; text-align: center; }
+
+.case-summary { padding: 1rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin: 1rem; }
+.case-summary h3 { font-size: 0.875rem; font-weight: 600; color: #374151; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.05em; }
+.summary-row { display: flex; font-size: 0.875rem; margin-bottom: 0.5rem; }
+.summary-label { font-weight: 500; color: #374151; min-width: 140px; }
+.summary-value { color: #6b7280; flex: 1; }
+.summary-section { margin-top: 0.75rem; }
+.summary-section-title { font-size: 0.75rem; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
+ul.summary-list { list-style: disc inside; color: #6b7280; margin: 0; padding: 0; font-size: 0.875rem; }
+ul.summary-list li { margin-bottom: 0.25rem; }
