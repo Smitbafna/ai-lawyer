@@ -1,0 +1,14 @@
+# M2.1E — State Applicability Table: Uttarakhand Tenancy Act, 2021
+
+| # | Jurisdiction | Statute | Act Number/Year | Commencement | Territorial Scope | Deposit Provision | Refund Provision | Exemptions | Applicability Questions the System Must Ask | Verification Status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Uttarakhand | Uttarakhand Tenancy Act, 2021 | Act No. 02 of 2022 | 01.01.2023 (Not. No. 67/iv(2)-sh. Vi.-2023-53 (sha)/2021, dated 13 Jan 2023) | Whole of State of Uttarakhand (§ 1(2)); applicability per property verification for exemptions (§ 3) | Security deposit not exceeding 2 months rent (residential) and 6 months rent (non-residential) (§ 11(1)) | Refund on date of taking over vacant possession after deducting tenant liability (§ 11(2)) | Exemptions under § 3 (categories to be verified per property) | 1. Is the property residential or non-residential? 2. Does any exemption under § 3 apply? 3. Has the Rent Authority been appointed functionally in this district? 4. What is the effective date of the tenancy agreement? | Verified — primary source traced to Uttarakhand Gazette (SRC-02) |
+| — | — | — | — | — | — | — | — | — | **Unsupported Jurisdictions** (not part of initial corpus) | — |
+| 2 | Tamil Nadu | Tamil Nadu Regulation of Rights and Responsibilities of Landlords and Tenants Act, 2017 | Act 42 of 2017 | Not specified in initial corpus | — | Not exceeding 3 months rent (residential & non-residential) (§ 11(1)) | Within such period agreed, or 30 days from delivery of vacant possession if no agreement (§ 11(2)) | — | 1. What is the territorial applicability? 2. Does any "save agreement to the contrary" provision apply? | Explicitly unsupported — no primary source verified for initial corpus |
+| 3 | Uttar Pradesh | Uttar Pradesh Regulation of Urban Premises Tenancy Act, 2021 | U.P. Act No. 16 of 2021 | Not specified in initial corpus (deemed commencement 11 Jan 2021 for specified areas) | Urban areas only; territorial applicability per § 1(3) notification | Not exceeding 2 months rent (residential) and 6 months rent (non-residential) (§ 11(1)) | Refund on date landlord takes over vacant possession after deducting tenant liability (§ 11(2)) | Exemptions under § 3 (categories to be verified per property) | 1. Does the property fall within the notified areas? 2. What is the applicable commencement date for this property? 3. Do exemptions under § 3 apply? | Explicitly unsupported — listed in separate unsupported section |
+
+### Notes:
+- Only Uttarakhand is presented as the supported jurisdiction for the initial corpus.
+- TN and UP entries are included in an explicitly unsupported section with "Explicitly unsupported" verification status.
+- No AP, J&K jurisdictions are listed anywhere in the document.
+- All statutory references are traceable to primary sources per the source_register.md.
