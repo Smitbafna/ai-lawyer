@@ -12,6 +12,7 @@ Responsibilities:
 - Do NOT load model on ordinary import.
 """
 
+from pathlib import Path
 from typing import List, Optional, Dict
 
 # Module-level model instance (lazy initialization)
@@ -21,6 +22,8 @@ _embed_dimension: Optional[int] = None
 # Configuration
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 EMBEDDING_DIM = 384  # Fixed by MiniLM-L6-v2 architecture
+CHROMA_PERSIST_DIR = Path("/home/smit-bafna/Projects/kuku/backend/persistent_chroma")
+COLLECTION_NAME = "uttarakhand_provisions"
 
 
 def _get_model() -> "SentenceTransformer":
