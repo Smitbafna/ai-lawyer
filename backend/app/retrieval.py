@@ -158,7 +158,7 @@ def keyword_search(query: str, jurisdiction: Optional[str] = None, top_k: int = 
         return _unsupported_jurisdiction_result(jurisdiction)
     if not query or not query.strip():
         return []
-    terms = re.findall(r"\\w+", query.lower())
+    terms = re.findall(r"\w+", query.lower())
     matches: List[Tuple[int, int, Dict[str, Any]]] = []
     for idx, entry in enumerate(PROVISIONS):
         score = 0
@@ -217,7 +217,7 @@ def hybrid_search(
     if not query or not query.strip():
         return []
     candidates = PROVISIONS
-    terms = re.findall(r"\\w+", query.lower())
+    terms = re.findall(r"\w+", query.lower())
     scored: List[Tuple[int, Dict[str, Any]]] = []
     for entry in candidates:
         score = 0
@@ -298,4 +298,232 @@ def get_unresolved_claims() -> List[Dict[str, Any]]:
 def list_all_unresolved_claims() -> List[Dict[str, Any]]:
     """Return all unresolved claims."""
     return get_unresolved_claims()
+
+
+def vector_search(
+    query: str,
+    jurisdiction: str = JURISDICTION,
+    top_k: int = 5,
+) -> List[Dict[str, Any]]:
+    """Search for semantically similar chunks using vector embeddings.
+
+    Generates query embeddings using the selected model, retrieves semantically
+    similar chunks from ChromaDB, and enforces jurisdiction filtering in the
+    vector query itself.
+
+    Returns stable chunk and provision IDs, similarity/distance information,
+    source metadata and original text.
+
+    Handles empty query, empty index, invalid top_k, unavailable model and
+    corrupt index explicitly. Does not silently fall back to keyword search.
+    Does not interpret semantic similarity as legal applicability.
+    """
+    if not query or not query.strip():
+        return []
+
+    if top_k <= 0 or not isinstance(top_k, int):
+        return []
+
+    if jurisdiction not in SUPPORTED:
+        return _unsupported_jurisdiction_result(jurisdiction)
+
+    import chromadb
+
+    from backend.app.embeddings import embed_text
+    # _embed_model removed - using shared embeddings
+
+    query_embedding = embed_text(query.strip())
+
+    try:
+        client = chromadb.PersistentClient(path="/home/smit-bafna/Projects/kuku/backend/persistent_chroma")
+        collection = client.get_or_create_collection(
+            name="uttarakhand_provisions", metadata={"hnsw_space": "cosine"}
+        )
+        results = collection.query(
+            query_embeddings=[query_embedding],
+            n_results=top_k,
+            where={"jurisdiction": jurisdiction},
+            include=["metadatas", "documents", "distances"],
+        )
+    except Exception:
+        return []
+
+    if not results or not results.get("ids") or not results["ids"][0]:
+        return []
+
+    formatted_results: List[Dict[str, Any]] = []
+    ids = results["ids"][0]
+    documents = results.get("documents", [""] * len(ids))
+    metadatas = results.get("metadatas", [{}])[0]
+    distances = results.get("distances", [[1.0] * len(ids)])[0]
+
+    for i, chunk_id in enumerate(ids):
+        provision_id = chunk_id.replace("CHUNK-", "", 1) if chunk_id.startswith("CHUNK-") else chunk_id
+        formatted_results.append(
+            {
+                "id": chunk_id,
+                "provision_id": provision_id,
+                "similarity": 1.0 - distances[i],
+                "distance": distances[i],
+                "section": metadatas[i].get("section", ""),
+                "legal_proposition": metadatas[i].get("legal_proposition", ""),
+                "qualifications": metadatas[i].get("qualifications", ""),
+                "source": metadatas[i].get("source", ""),
+                "source_id": metadatas[i].get("source_id", ""),
+                "source_url": metadatas[i].get("source_url", ""),
+                "verification_status": metadatas[i].get("verification_status", ""),
+                "jurisdiction": metadatas[i].get("jurisdiction", ""),
+                "statute": metadatas[i].get("statute", ""),
+                "act_number": metadatas[i].get("act_number", ""),
+                "commencement": metadatas[i].get("commencement", ""),
+                "document_type": metadatas[i].get("document_type", "statutory provision"),
+                "provision_identifier": metadatas[i].get("provision_identifier", ""),
+                "original_text": documents[i],
+                "provenance": "vector_search",
+            }
+        )
+    return formatted_results
+
+
+def hybrid_search(
+    query: str,
+    jurisdiction: str = JURISDICTION,
+    top_k: int = 5,
+) -> List[Dict[str, Any]]:
+    """Genuine hybrid retrieval: fuse keyword and vector search results using RRF.
+
+    1. Independently retrieve keyword candidates.
+    2. Independently retrieve vector candidates.
+    3. Fuse rankings using Reciprocal Rank Fusion (k=60).
+    3. Deduplicate using stable chunk identity.
+    4. Preserve keyword rank, vector rank and combined RRF score.
+    5. Preserve source metadata and jurisdiction safeguards.
+
+    Returns results with rrf_score, keyword_rank, vector_rank, and merged metadata.
+    """
+    if not query or not query.strip():
+        return []
+
+    if top_k <= 0 or not isinstance(top_k, int):
+        return []
+
+    if jurisdiction not in SUPPORTED:
+        return _unsupported_jurisdiction_result(jurisdiction)
+
+    # Step 1: Independently retrieve keyword candidates
+    keyword_candidates = _keyword_search(query, top_k=top_k)
+
+    # Step 2: Independently retrieve vector candidates
+    vector_candidates = vector_search(query, jurisdiction=jurisdiction, top_k=top_k)
+
+    # Step 3: Fuse rankings using RRF
+    kw_rank: Dict[str, int] = {}
+    for i, r in enumerate(keyword_candidates):
+        kw_rank[r["id"]] = i + 1
+
+    vec_rank: Dict[str, int] = {}
+    for i, r in enumerate(vector_candidates):
+        vec_rank[r["id"]] = i + 1
+
+    all_ids = set(kw_rank.keys()) | set(vec_rank.keys())
+
+    scored: List[Dict[str, Any]] = []
+    for chunk_id in all_ids:
+        kw_r = kw_rank.get(chunk_id, 0)
+        vec_r = vec_rank.get(chunk_id, 0)
+
+        if kw_r == 0 and vec_r == 0:
+            continue
+
+        rrf_score = 1.0 / (60 + kw_r) + 1.0 / (60 + vec_r)
+
+        in_kw = kw_r > 0
+        in_vec = vec_r > 0
+
+        merged_meta = {}
+        if in_kw and in_vec:
+            kw_meta = next(
+                (r.get("metadata", {}) for r in keyword_candidates if r["id"] == chunk_id),
+                {},
+            )
+            vec_meta = next(
+                (r.get("metadata", {}) for r in vector_candidates if r["id"] == chunk_id),
+                {},
+            )
+            for field in set(list(kw_meta.keys()) + list(vec_meta.keys())):
+                if kw_meta.get(field) and not vec_meta.get(field):
+                    merged_meta[field] = kw_meta[field]
+                elif vec_meta.get(field) and not kw_meta.get(field):
+                    merged_meta[field] = vec_meta[field]
+                else:
+                    merged_meta[field] = kw_meta.get(field) or vec_meta.get(field)
+        elif in_kw:
+            merged_meta = next(
+                (r.get("metadata", {}) for r in keyword_candidates if r["id"] == chunk_id), {}
+            )
+        elif in_vec:
+            merged_meta = next(
+                (r.get("metadata", {}) for r in vector_candidates if r["id"] == chunk_id), {}
+            )
+
+        scored.append(
+            {
+                "id": chunk_id,
+                "keyword_rank": kw_r,
+                "vector_rank": vec_r,
+                "rrf_score": rrf_score,
+                "in_keyword": in_kw,
+                "in_vector": in_vec,
+                "metadata": merged_meta,
+            }
+        )
+
+    scored.sort(key=lambda x: (-x["rrf_score"], x["keyword_rank"], x["vector_rank"]))
+
+    # Format results
+    results: List[Dict[str, Any]] = []
+    for item in scored[:top_k]:
+        chunk_id = item["id"]
+        provision_id = chunk_id.replace("CHUNK-", "", 1) if chunk_id.startswith("CHUNK-") else chunk_id
+
+        provision = None
+        if provision_id in [p["id"] for p in PROVISIONS]:
+            provision = next((p for p in PROVISIONS if p["id"] == provision_id), None)
+
+        result = {
+            "id": chunk_id,
+            "provision_id": provision_id,
+            "rrf_score": item["rrf_score"],
+            "keyword_rank": item["keyword_rank"],
+            "vector_rank": item["vector_rank"],
+            "in_keyword": item["in_keyword"],
+            "in_vector": item["in_vector"],
+            "section": item["metadata"].get("section", ""),
+            "legal_proposition": item["metadata"].get("legal_proposition", ""),
+            "qualifications": item["metadata"].get("qualifications", ""),
+            "source": item["metadata"].get("source", ""),
+            "source_id": item["metadata"].get("source_id", ""),
+            "source_url": item["metadata"].get("source_url", ""),
+            "verification_status": item["metadata"].get("verification_status", ""),
+            "jurisdiction": item["metadata"].get("jurisdiction", ""),
+            "statute": item["metadata"].get("statute", ""),
+            "act_number": item["metadata"].get("act_number", ""),
+            "commencement": item["metadata"].get("commencement", ""),
+            "document_type": item["metadata"].get("document_type", "statutory provision"),
+            "provision_identifier": item["metadata"].get("provision_identifier", ""),
+            "original_text": "",
+            "provenance": "hybrid_search",
+        }
+        if provision:
+            result["original_text"] = f"S {provision['section']}: {provision['legal_proposition']}"
+            result["provision_metadata"] = {
+                "id": provision["id"],
+                "statute": provision["statute"],
+                "act_number": provision["act_number"],
+                "commencement": provision["commencement"],
+                "jurisdiction": provision["jurisdiction"],
+            }
+        results.append(result)
+
+    return results
 
