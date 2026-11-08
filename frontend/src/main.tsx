@@ -12,13 +12,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loggingIn, setLoggingIn] = useState(false)
 
   // First, remove any stale token to force login page to show
   useEffect(() => {
     localStorage.removeItem("auth_token")
     setIsAuthenticated(false)
-    setLoggingIn(false)
+    
   }, [])
 
   // Then check for existing auth token - handles case where storage
@@ -33,7 +32,7 @@ function App() {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === "auth_token") {
         setIsAuthenticated(!!event.newValue)
-        setLoggingIn(false)
+        
       }
     }
 

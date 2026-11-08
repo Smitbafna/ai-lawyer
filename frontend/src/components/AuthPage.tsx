@@ -156,14 +156,14 @@ export const AuthPage: React.FC = () => {
           <div className="mx-auto mb-6 flex w-fit gap-1 rounded-lg bg-coffeeBrown/5 p-1">
             <Button
               size="sm"
-              variant={isLogin ? "segmentActive" : "segment"}
+              variant={isLogin ? "default" : "default"}
               onClick={() => switchMode("login")}
             >
               Sign In
             </Button>
             <Button
               size="sm"
-              variant={isSignup ? "segmentActive" : "segment"}
+              variant={isSignup ? "default" : "default"}
               onClick={() => switchMode("signup")}
             >
               Create Account
@@ -219,8 +219,8 @@ export const AuthPage: React.FC = () => {
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2">
                   <Button
-                    variant="icon"
-                    ariaLabel={showPassword ? "Hide password" : "Show password"}
+                    size="icon"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     onClick={handleTogglePassword}
                   >
                     {showPassword ? (
