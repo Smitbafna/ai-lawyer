@@ -13,11 +13,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
+  // Callback to notify login success from AuthPage
+  const setAuthState = (auth: boolean) => setIsAuthenticated(auth)
+
   // First, remove any stale token to force login page to show
   useEffect(() => {
     localStorage.removeItem("auth_token")
     setIsAuthenticated(false)
-    
+
   }, [])
 
   // Then check for existing auth token - handles case where storage
@@ -25,6 +28,7 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("auth_token")
     setIsAuthenticated(!!token)
+
   }, [])
 
   // Listen for auth token changes from login flow
@@ -32,7 +36,7 @@ function App() {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === "auth_token") {
         setIsAuthenticated(!!event.newValue)
-        
+
       }
     }
 
@@ -45,7 +49,7 @@ function App() {
 
   return (
     <React.Fragment>
-      {isAuthenticated ? <ChatPage /> : <AuthPage />}
+      {isAuthenticated ? <ChatPage /> : <AuthPage onLogin={setAuthState} />}
     </React.Fragment>
   )
 }

@@ -5,7 +5,11 @@ import { Button } from "../components/ui/button";
 
 type AuthForm = LoginCredentials & Partial<Pick<SignupCredentials, "full_name" | "confirmPassword">>;
 
-export const AuthPage: React.FC = () => {
+type AuthPageProps = {
+  onLogin?: (auth: boolean) => void;
+};
+
+export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [form, setForm] = useState<AuthForm>({ email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -79,6 +83,8 @@ export const AuthPage: React.FC = () => {
       try {
         if (isLogin) {
           await login({ email: form.email, password: form.password });
+          // Notify parent about login success
+          onLogin?.(true);
           // Check for token directly - storage event may not fire in same context
           const token = localStorage.getItem("auth_token");
           if (token) {
