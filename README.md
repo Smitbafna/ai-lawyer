@@ -28,35 +28,46 @@ The system does not automatically assume that the Act applies to every tenancy i
 
 ## 3. System Architecture
 
-```
+```mermaid
 flowchart TD
     U["User"] --> UI["React + TypeScript"]
     UI --> API["FastAPI Backend"]
 
     API --> INTAKE["Conversational Intake"]
-    INTAKE --> LLM["Gemini / Mock Provider"]
-    LLM --> FACTS["Fact Extraction & Validation"]
+    INTAKE --> LLM1["Gemini / Mock Provider"]
+    LLM1 --> FACTS["Fact Extraction & Validation"]
     FACTS --> DB[("SQLite Case Database")]
     FACTS --> FOLLOW["Follow-up Questions"]
     FOLLOW --> UI
 
     UI --> QA["Legal Q&A Service"]
     DB --> QA
+
     QA --> RET["Hybrid Retrieval"]
     RET --> KEY["Keyword Search"]
     RET --> VEC["Vector Search"]
+
     KEY --> RRF["Reciprocal Rank Fusion"]
     VEC --> RRF
-    RRF --> KB[("ChromaDB Knowledge Base")]
+
+    KB[("ChromaDB Knowledge Base")] --> VEC
+    KWD[("Keyword Index")] --> KEY
+
+    DOCS["Legal Documents"] --> CHUNK["Document Chunking"]
+    CHUNK --> EMB["Embedding Generation"]
+    EMB --> KB
+    CHUNK --> KWD
 
     QA --> PROMPT["Grounded Prompt"]
     RRF --> PROMPT
-    PROMPT --> LLM
-    LLM --> CHECK["Grounding Validation"]
+    PROMPT --> LLM2["Gemini / Mock Provider"]
+    LLM2 --> CHECK["Grounding Validation"]
+
     CHECK --> DEC{"Reliable?"}
     DEC -->|Yes| ANS["Legal Answer"]
     DEC -->|Clarification| CLARIFY["Ask Follow-up"]
     DEC -->|Unsupported| ABSTAIN["Abstain"]
+
     ANS --> UI
     CLARIFY --> UI
     ABSTAIN --> UI
