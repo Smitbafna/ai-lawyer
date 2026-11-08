@@ -44,3 +44,5 @@ Thumbs.db
 alembic.ini
 versions/persistent_chroma/
 /backend/persistent_chroma/
+# Deployment symlinks
+app
