@@ -2,8 +2,8 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.database.models import Case
-from app.schemas.case import CaseUpdate, CaseResponse
+from .database.models import Case
+from .schemas.case import CaseUpdate, CaseResponse
 
 
 def create_case(db: Session, case_type: str = "security_deposit_dispute") -> Case:

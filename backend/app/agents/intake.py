@@ -10,7 +10,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field
 
 from app.database.models import Case
-from app.llm.provider import LLMProvider, LLMProviderError
+from .llm.provider import LLMProvider, LLMProviderError
 
 logger = logging.getLogger(__name__)
 

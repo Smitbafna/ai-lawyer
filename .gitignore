@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-venv/
 env/
 .env
 .venv/
@@ -43,6 +42,3 @@ Thumbs.db
 # Alembic
 alembic.ini
 versions/persistent_chroma/
-/backend/persistent_chroma/
-# Deployment symlinks
-app
