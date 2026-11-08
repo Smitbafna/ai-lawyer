@@ -12,7 +12,7 @@ import type {
 
 const API_BASE =
   import.meta.env.VITE_API_BASE ||
-  "https://ai-lawyer-d5fs.onrender.com/api"
+  "https://ai-lawyer-seven.onrender.com/api"
 
 const api = axios.create({
   baseURL: API_BASE,

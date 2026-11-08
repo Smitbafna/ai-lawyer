@@ -8,7 +8,12 @@ app = FastAPI(title="AI Lawyer - Tenant Dispute Intake", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://ai-lawyer-seven.vercel.app"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://ai-lawyer-seven.vercel.app",
+        "https://ai-lawyer-seven.onrender.com",  # Render backend URL
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
