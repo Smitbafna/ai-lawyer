@@ -80,7 +80,7 @@ export interface SignupResponse {
     email: string
     created_at: string
   }
-  token: string
+  access_token: string
 }
 
 export interface LoginCredentials {
@@ -115,6 +115,6 @@ export interface LoginResponse {
     email: string
     created_at: string
   }
-  token: string
+  access_token: string
 }
 

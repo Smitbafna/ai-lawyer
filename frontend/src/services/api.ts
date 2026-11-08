@@ -101,8 +101,8 @@ export const signup = async (
 ): Promise<SignupResponse> => {
   const response = await api.post<SignupResponse>("/auth/signup", credentials)
   // Store token after successful signup
-  if (response.data.token) {
-    localStorage.setItem("auth_token", response.data.token)
+  if (response.data.access_token) {
+    localStorage.setItem("auth_token", response.data.access_token)
   }
   return response.data
 }
@@ -112,8 +112,8 @@ export const login = async (
 ): Promise<LoginResponse> => {
   const response = await api.post<LoginResponse>("/auth/login", credentials)
   // Store token after successful login
-  if (response.data.token) {
-    localStorage.setItem("auth_token", response.data.token)
+  if (response.data.access_token) {
+    localStorage.setItem("auth_token", response.data.access_token)
   }
   return response.data
 }
