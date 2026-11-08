@@ -15,6 +15,9 @@ def signup(user_in: UserCreate, db: Session = Depends(get_db)):
     from passlib.context import CryptContext
 
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    # bcrypt has a 72-byte limit on password length; truncate if necessary
+    if len(user_in.password.encode("utf-8")) > 72:
+        user_in.password = user_in.password[:72]
     hashed_password = pwd_context.hash(user_in.password)
 
     existing_user = db.query(User).filter(User.email == user_in.email).first()

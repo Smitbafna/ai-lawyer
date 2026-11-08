@@ -12,7 +12,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "https://ai-lawyer-seven.vercel.app",
-        "https://ai-lawyer-seven.onrender.com",  # Render backend URL
+        "https://ai-lawyer-d5fs.onrender.com",  # Render backend URL
     ],
     allow_credentials=True,
     allow_methods=["*"],
