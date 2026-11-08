@@ -10,7 +10,9 @@ import type {
   ApiError,
 } from "../types"
 
-const API_BASE = import.meta.env.VITE_API_BASE || "/api"
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  "https://ai-lawyer-d5fs.onrender.com/api"
 
 const api = axios.create({
   baseURL: API_BASE,
