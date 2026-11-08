@@ -18,7 +18,7 @@ export const CaseSummary: React.FC<CaseSummaryProps> = ({ caseData }) => {
   const structuredFacts = caseData.structured_facts || {}
 
   return (
-    <div className="case-summary p-4 coffee-surface">
+    <div className="case-summary p-4 coffee-surface min-w-0">
       <h3 className="text-xs font-medium coffee-primary mb-4">Case Summary</h3>
 
       <div className="border-b border-coffee-border pb-3 mb-3">
@@ -82,7 +82,7 @@ export const CaseSummary: React.FC<CaseSummaryProps> = ({ caseData }) => {
           <h4 className="text-xs font-medium coffee-warning mb-2">Information Needed</h4>
           <div className="space-y-1 text-sm">
             {caseData.missing_information.map((item, i) => (
-              <span key={i} className="coffee-warning text-sm inline-block px-2 py-1 rounded bg-coffee-input mr-1">
+              <span key={i} className="coffee-warning text-sm inline-block min-w-0 px-2 py-1 rounded bg-coffee-input mr-1">
                 {item}
               </span>
             ))}
