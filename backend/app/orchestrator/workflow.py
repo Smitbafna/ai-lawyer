@@ -9,7 +9,7 @@ holds a DB connection open and never leaves partial writes.
 import logging
 from typing import Any
 
-from .agents.intake import IntakeAgent, IntakeLLMOutput
+from ..agents.intake import IntakeAgent, IntakeLLMOutput
 from .database.connection import SessionLocal
 from .database.models import Case, Conversation, Message
 from .services.case_service import update_case_facts
