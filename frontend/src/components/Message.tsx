@@ -14,12 +14,12 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
   return (
     <div
       className={isUser ? userClass : assistantClass}
-      style={{ maxWidth: maxWidth }}
+      style={{ maxWidth: maxWidth, marginBottom: "1rem" }}
     >
       <div className="message-meta">
         {isUser ? "You" : "Assistant"} • {new Date(message.created_at || Date.now()).toLocaleString()}
       </div>
-      <div className="message-bubble" style={{ whiteSpace: "pre-wrap" }}>
+      <div className="message-bubble" style={{ whiteSpace: "pre-wrap", backgroundColor: "white", borderRadius: "0.5rem", padding: "0.5rem" }}>
         {message.content}
       </div>
     </div>

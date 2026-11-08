@@ -8,16 +8,32 @@ interface ChatPanelProps {
   onCaseUpdated: (updatedCase: any) => void
 }
 
+interface ChatHistoryItem {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  created_at: string
+}
+
 export const ChatPanel: React.FC<ChatPanelProps> = ({ caseId, onCaseUpdated }) => {
   const [messages, setMessages] = useState<MessageType[]>([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([])
 
   const loadMessages = useCallback(async () => {
     try {
       const data = await getMessages(caseId)
       setMessages(data)
+      // Also update chat history from database
+      const historyFromDb = data.map((msg) => ({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content,
+        created_at: msg.created_at || "",
+      }))
+      setChatHistory(historyFromDb)
     } catch (err: any) {
       console.error("Failed to load messages", err)
     }
@@ -57,10 +73,20 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ caseId, onCaseUpdated }) =
           created_at: new Date().toISOString(),
         },
       ])
+
+      // Update chat history with both user and assistant messages
+      setChatHistory((prev) => [
+        ...prev,
+        { id: "user-" + Date.now(), role: "user", content: userMessage, created_at: new Date().toISOString() },
+        { id: "assistant-" + Date.now(), role: "assistant", content: response.assistant_message, created_at: new Date().toISOString() },
+      ])
+
       // Re-fetch messages from database to persist user's message in the UI
       const fetchedMessages = await getMessages(caseId)
       setMessages(fetchedMessages)
-      onCaseUpdated(response.updated_case)
+
+      // Pass updated chat history to parent
+      onCaseUpdated({ ...response.updated_case, chatHistory: chatHistory })
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to send message. Please try again.")
       setMessages((prev) => prev.filter((m) => m.id !== tempUserMessage.id))

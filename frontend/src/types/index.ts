@@ -8,6 +8,12 @@ export interface Case {
   missing_information: string[] | null
   created_at: string | null
   updated_at: string | null
+  chatItems?: Array<{
+    id: string
+    title: string | null
+    last_message: string | null
+    last_message_time: string | null
+  }> | null
 }
 
 export interface CaseStructuredFacts {
