@@ -135,11 +135,11 @@ class DocumentService:
             # D2+: Will add jurisdiction and content-type specific validation
 
             def save_draft(self, case_id: str, document_type: DocumentType, content: str) -> Document:
-        from app.database.connection import SessionLocal
-        from datetime import datetime
-        db = self._db_session_factory()
-        try:
-            case = db.query(Case).filter(Case.id == case_id).first()
+            from app.database.connection import SessionLocal
+            from datetime import datetime
+            db = self._db_session_factory()
+            try:
+                case = db.query(Case).filter(Case.id == case_id).first()
             if not case:
                 raise ValueError(f"Case {case_id} not found")
             existing = (
