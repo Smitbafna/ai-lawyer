@@ -5,7 +5,7 @@ from app.database.connection import get_db
 from app.database.models import Case
 from app.schemas.case import CaseResponse, CaseUpdate
 
-router = APIRouter(prefix="/cases", tags=["cases"])
+router = APIRouter(tags=["cases"])
 
 
 @router.post("", response_model=CaseResponse, status_code=201)

@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Any, Optional, TypeVar
 
-import google.generativeai as genai
+from google import genai
 from pydantic import BaseModel
 
 from app.core.config import settings
@@ -34,9 +34,8 @@ class GeminiProvider(LLMProvider[T]):
             raise LLMProviderError(
                 "Gemini API key is not configured. Set GEMINI_API_KEY in environment."
             )
-        genai.configure(api_key=api_key or settings.gemini_api_key)
+        self._client = genai.Client(api_key=api_key or settings.gemini_api_key)
         self.model_name = model or settings.gemini_model
-        self._model = genai.GenerativeModel(self.model_name)
         self.timeout = timeout
 
     def _wrap_retryable(self, exc: Exception) -> LLMProviderError:
@@ -143,7 +142,10 @@ class GeminiProvider(LLMProvider[T]):
 
         async def _call() -> T:
             nonlocal raw_text
-            result = await self._model.generate_content_async(full_prompt)
+            result = await self._client.aio.models.generate_content(
+                model=self.model_name,
+                contents=full_prompt,
+            )
             raw_text = result.text or ""
 
             # Strip markdown fences if present
@@ -176,7 +178,10 @@ class GeminiProvider(LLMProvider[T]):
             full_prompt = f"{system_prompt}\n\n{prompt}"
 
         async def _call() -> str:
-            result = await self._model.generate_content_async(full_prompt)
+            result = await self._client.aio.models.generate_content(
+                model=self.model_name,
+                contents=full_prompt,
+            )
             return result.text or ""
 
         try:

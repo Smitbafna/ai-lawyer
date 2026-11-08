@@ -10,7 +10,7 @@ from app.database.models import Case, Conversation, Message
 from app.llm.provider import LLMProviderError
 from app.schemas.conversation import ChatRequest, ChatResponse
 
-router = APIRouter(prefix="/cases", tags=["chat"])
+router = APIRouter(tags=["chat"])
 
 
 @router.post("/{case_id}/chat", response_model=ChatResponse)

@@ -36,7 +36,7 @@ def client(db_session):
 
 
 def test_create_case(client):
-    response = client.post("/cases")
+    response = client.post("/api/cases")
     assert response.status_code == 201
     data = response.json()
     assert data["case_type"] == "security_deposit_dispute"
@@ -45,10 +45,10 @@ def test_create_case(client):
 
 
 def test_get_case(client):
-    create_resp = client.post("/cases")
+    create_resp = client.post("/api/cases")
     case_id = create_resp.json()["id"]
 
-    response = client.get(f"/cases/{case_id}")
+    response = client.get(f"/api/cases/{case_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == case_id
@@ -56,16 +56,16 @@ def test_get_case(client):
 
 
 def test_get_case_not_found(client):
-    response = client.get("/cases/00000000-0000-0000-0000-000000000000")
+    response = client.get("/api/cases/00000000-0000-0000-0000-000000000000")
     assert response.status_code == 404
 
 
 def test_patch_case(client):
-    create_resp = client.post("/cases")
+    create_resp = client.post("/api/cases")
     case_id = create_resp.json()["id"]
 
     response = client.patch(
-        f"/cases/{case_id}",
+        f"/api/cases/{case_id}",
         json={"jurisdiction_state": "Maharashtra"},
     )
     assert response.status_code == 200
@@ -75,7 +75,7 @@ def test_patch_case(client):
 
 def test_patch_case_not_found(client):
     response = client.patch(
-        "/cases/00000000-0000-0000-0000-000000000000",
+        "/api/cases/00000000-0000-0000-0000-000000000000",
         json={"jurisdiction_state": "Maharashtra"},
     )
     assert response.status_code == 404

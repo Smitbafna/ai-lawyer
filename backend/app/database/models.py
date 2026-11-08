@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text, JSON, Integer
+from sqlalchemy import Column, String, DateTime, ForeignKey, Text, JSON, Integer, Boolean
 from sqlalchemy.orm import relationship
 
 from app.database.connection import Base
@@ -10,6 +10,20 @@ from app.database.connection import Base
 
 def _generate_uuid() -> str:
     return str(uuid.uuid4())
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True, default=_generate_uuid, index=True)
+    email = Column(String, unique=True, nullable=False, index=True)
+    full_name = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
 
 
 class Case(Base):

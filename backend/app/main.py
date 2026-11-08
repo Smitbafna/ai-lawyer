@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import cases, chat
+from app.api import cases, chat, auth
 from app.database.connection import engine, Base
 
 app = FastAPI(title="AI Lawyer - Tenant Dispute Intake", version="0.1.0")
@@ -14,13 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(cases.router)
-app.include_router(chat.router)
+app.include_router(auth.router, prefix="/api")
+app.include_router(cases.router, prefix="/api/cases")
+app.include_router(chat.router, prefix="/api/cases")
 
-
-@app.on_event("startup")
-def on_startup():
-    Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 
 @app.get("/health")

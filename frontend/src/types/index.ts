@@ -59,3 +59,56 @@ export interface ChatResponse {
 export interface ApiError {
   detail: string
 }
+
+export interface SignupCredentials {
+  full_name: string
+  email: string
+  password: string
+  confirmPassword?: string
+}
+
+export interface SignupResponse {
+  user: {
+    id: string
+    full_name: string
+    email: string
+    created_at: string
+  }
+  token: string
+}
+
+export interface LoginCredentials {
+  email: string
+  password: string
+}
+
+// Legal assessment response types
+export interface LegalAnswerResponse {
+  legal_answer: {
+    disposition: string
+    confidence: number
+    answer: string
+    explanation?: string
+    cited_provisions: Array<{
+      provision_identifier: string
+      section: string
+      legal_proposition: string
+      qualifications?: string
+    }>
+    unresolved_claims: string[]
+  }
+  grounding_check: {
+    check_details: string
+  }
+}
+
+export interface LoginResponse {
+  user: {
+    id: string
+    full_name: string
+    email: string
+    created_at: string
+  }
+  token: string
+}
+

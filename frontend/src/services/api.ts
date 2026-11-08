@@ -1,5 +1,14 @@
 import axios from "axios"
-import type { Case, ChatRequest, ChatResponse } from "../types"
+import type {
+  Case,
+  ChatRequest,
+  ChatResponse,
+  SignupCredentials,
+  SignupResponse,
+  LoginCredentials,
+  LoginResponse,
+  ApiError,
+} from "../types"
 
 const API_BASE = import.meta.env.VITE_API_BASE || "/api"
 
@@ -8,6 +17,15 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+})
+
+// Interceptor to add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("auth_token")
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
 })
 
 export const createCase = async (): Promise<Case> => {
@@ -22,7 +40,7 @@ export const getCase = async (caseId: string): Promise<Case> => {
 
 export const updateCase = async (
   caseId: string,
-  updates: Partial<Case>
+  updates: Partial<Case>,
 ): Promise<Case> => {
   const response = await api.patch<Case>(`/cases/${caseId}`, updates)
   return response.data
@@ -30,7 +48,7 @@ export const updateCase = async (
 
 export const sendChatMessage = async (
   caseId: string,
-  request: ChatRequest
+  request: ChatRequest,
 ): Promise<ChatResponse> => {
   const response = await api.post<ChatResponse>(`/cases/${caseId}/chat`, request)
   return response.data
@@ -72,4 +90,40 @@ export const getCaseSummary = (caseData: Case | null) => {
     evidence: f.evidence_available || [],
     missingInformation: f.missing_information || caseData.missing_information || [],
   }
+}
+
+export interface AuthError extends ApiError {}
+
+export const signup = async (
+  credentials: SignupCredentials,
+): Promise<SignupResponse> => {
+  const response = await api.post<SignupResponse>("/auth/signup", credentials)
+  // Store token after successful signup
+  if (response.data.token) {
+    localStorage.setItem("auth_token", response.data.token)
+  }
+  return response.data
+}
+
+export const login = async (
+  credentials: LoginCredentials,
+): Promise<LoginResponse> => {
+  const response = await api.post<LoginResponse>("/auth/login", credentials)
+  // Store token after successful login
+  if (response.data.token) {
+    localStorage.setItem("auth_token", response.data.token)
+  }
+  return response.data
+}
+
+export const getCurrentUser = async (): Promise<SignupResponse["user"]> => {
+  const response = await api.get<{ user: SignupResponse["user"] }>("/auth/me")
+  return response.data.user
+}
+
+export const logout = async (): Promise<void> => {
+  const response = await api.post<void>("/auth/logout")
+  // Remove token on logout
+  localStorage.removeItem("auth_token")
+  return response.data
 }

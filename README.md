@@ -189,3 +189,21 @@ security-deposit disputes in India:
 - `sources/` — cached reference excerpts
 
 See `M2.1B/INDEX.md` for the full index.
+## Scope Clarification
+
+This AI Lawyer application is currently **just for Uttarakhand**, not for all of India.
+
+### Supported Jurisdiction:
+- **Uttarakhand** — Uttarakhand Tenancy Act, 2021 (Act No. 02 of 2022), commenced 01.01.2023
+- Security deposit cap: 2 months rent (residential), 6 months rent (non-residential)
+- Refund on vacant possession after liability deduction
+
+### Unsupported Jurisdictions (explicitly marked):
+- Tamil Nadu — Tamil Nadu Regulation of Rights and Responsibilities of Landlords and Tenants Act, 2017
+- Uttar Pradesh — Uttar Pradesh Regulation of Urban Premises Tenancy Act, 2021
+- No other states/UTs are in the supported corpus
+
+### Technical Implementation:
+- Jurisdiction is **server-enforced** as `'Uttarakhand'` — the API rejects any attempts to override jurisdiction
+- Chroma vector store collection name: `uttarakhand_provisions`
+- All legal provisions are traced to Uttarakhand Gazette (SRC-02)
