@@ -66,6 +66,31 @@ export interface ApiError {
   detail: string
 }
 
+// Legal notice document types
+export type DocumentType = "legal_notice" | "complaint" | "reply" | "application"
+
+export interface DocumentRequirementsResponse {
+  case_id: string
+  document_type: DocumentType
+  required_information: string[]
+  available_information: string[]
+  missing_information: string[]
+  confirmation_required: boolean
+  can_generate: boolean
+  blocking_reasons: string[]
+}
+
+export interface DocumentResponse {
+  document_id: string | null
+  case_id: string
+  document_type: DocumentType
+  status: string
+  message: string
+  blocking_reasons: string[]
+}
+
+export interface AuthError extends ApiError {
+
 export interface SignupCredentials {
   full_name: string
   email: string

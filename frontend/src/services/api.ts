@@ -96,6 +96,29 @@ export const getCaseSummary = (caseData: Case | null) => {
 
 export interface AuthError extends ApiError {}
 
+// Document type enum-like type
+export type DocumentType = "legal_notice" | "complaint" | "reply" | "application"
+
+export interface DocumentRequirementsResponse {
+  case_id: string
+  document_type: DocumentType
+  required_information: string[]
+  available_information: string[]
+  missing_information: string[]
+  confirmation_required: boolean
+  can_generate: boolean
+  blocking_reasons: string[]
+}
+
+export interface DocumentResponse {
+  document_id: string | null
+  case_id: string
+  document_type: DocumentType
+  status: string
+  message: string
+  blocking_reasons: string[]
+}
+
 export const signup = async (
   credentials: SignupCredentials,
 ): Promise<SignupResponse> => {
@@ -123,9 +146,29 @@ export const getCurrentUser = async (): Promise<SignupResponse["user"]> => {
   return response.data.user
 }
 
-export const logout = async (): Promise<void> => {
-  const response = await api.post<void>("/auth/logout")
-  // Remove token on logout
-  localStorage.removeItem("auth_token")
+export const postDocumentRequirements = async (
+  request: { case_id: string; document_type: DocumentType; user_instructions?: string; additional_information?: Record<string, any> }
+) => {
+  const response = await api.post<DocumentRequirementsResponse>("/documents/requirements", request)
+  return response.data
+}
+
+export const postDocumentGenerate = async (
+  request: { case_id: string; document_type: DocumentType; user_instructions?: string; additional_information?: Record<string, any> }
+) => {
+  const response = await api.post<DocumentResponse>("/documents/generate", request)
+  return response.data
+}
+
+export const getDocument = async (documentId: string) => {
+  const response = await api.get<DocumentResponse>(`/documents/${documentId}`)
+  return response.data
+}
+
+export const patchDocument = async (
+  documentId: string,
+  request: { case_id: string; document_type: DocumentType; user_instructions?: string }
+) => {
+  const response = await api.patch<DocumentResponse>(`/documents/${documentId}`, request)
   return response.data
 }

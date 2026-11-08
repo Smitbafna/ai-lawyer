@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { ChatPanel } from '../components/ChatPanel'
 import { CaseSummary } from '../components/CaseSummary'
 import { Button } from '../components/ui/button'
+import { LegalNoticeDialog } from '../components/LegalNoticeDialog'
 import { createCase, getCase } from '../services/api'
 import type { Case } from '../types'
 
 export const ChatPage: React.FC = () => {
   const [currentCase, setCurrentCase] = useState<Case | null>(null)
   const [isCreating, setIsCreating] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const createNewCase = useCallback(async () => {
     if (isCreating) return
@@ -68,10 +70,25 @@ export const ChatPage: React.FC = () => {
 
             {currentCase && (
               <>
+
                 <div className='case-badge text-sm mb-4'>
                   <p className='coffee-primary'>Active Case: {currentCase.id.substring(0, 8)}...</p>
                   <p className='coffee-muted'>Status: {currentCase.status}</p>
                 </div>
+
+                {/* Prepare Legal Notice Button */}
+                {currentCase.structured_facts && (
+                  <div className='mb-4'>
+                    <Button
+                      size="sm"
+                      onClick={() => setDialogOpen(true)}
+                      className="w-full justify-center"
+                    >
+                      Prepare Legal Notice
+                    </Button>
+                  </div>
+                )}
+
                 <div className='chat-history mt-4 space-y-2 text-sm'>
                   <p className='coffee-muted text-xs font-medium mb-1'>Chat History</p>
                   {currentCase.chatItems && currentCase.chatItems.length > 0 ? (
@@ -117,6 +134,15 @@ export const ChatPage: React.FC = () => {
           <div className='case-panel max-w-80 w-80 border-l border-coffee-surface bg-coffee-surface flex-none'>
             <CaseSummary caseData={currentCase} />
           </div>
+        )}
+
+        {/* Legal Notice Dialog */}
+        {dialogOpen && (
+          <LegalNoticeDialog
+            isOpen={dialogOpen}
+            onClose={() => setDialogOpen(false)}
+            currentCase={currentCase}
+          />
         )}
       </div>
     </div>

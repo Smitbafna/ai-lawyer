@@ -42,6 +42,7 @@ class Case(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     conversations = relationship("Conversation", back_populates="case", cascade="all, delete-orphan")
+documents = relationship("Document", back_populates="case", cascade="all, delete-orphan")
 
 
 class Conversation(Base):
@@ -67,3 +68,24 @@ class Message(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     conversation = relationship("Conversation", back_populates="messages")
+
+
+class Document(Base):
+    __tablename__ = "documents"
+
+    id = Column(String, primary_key=True, default=_generate_uuid, index=True)
+    case_id = Column(
+        String, ForeignKey("cases.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    document_type = Column(String, nullable=False)
+    status = Column(String, nullable=False)  # draft_generated, user_approved, served, filed
+    content = Column(Text, nullable=False)
+    version = Column(Integer, nullable=False, default=1)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+    # Track previous versions as JSON list of (version, content, timestamp)
+    previous_versions = Column(JSON, nullable=True, default=list)
+
+    case = relationship("Case", back_populates="documents")  # We'll add back_populates later
