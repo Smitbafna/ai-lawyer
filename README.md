@@ -1,209 +1,172 @@
-# AI Lawyer - Tenant–Landlord Dispute Intake (M1)
+# AI Lawyer
 
-Project foundation and conversational case intake engine for tenant–landlord
-disputes in India, focused on security deposit refund disputes.
+Solution Document | Uttarakhand, India | Residential Tenancy and Security-Deposit Disputes
 
-## Architecture
+## 1. Introduction and Problem Scope
 
-### Backend (`backend/`)
-- **FastAPI** application with modular structure
-- **SQLAlchemy** ORM with SQLite database
-- **Pydantic** v2 for validation and schemas
-- **Gemini API** via a provider-independent adapter (`llm/provider.py`)
-- **Mock provider** for deterministic testing (`tests/mock_provider.py`)
+AI Lawyer is a conversational legal assistant focused on helping tenants in Uttarakhand understand residential rental security-deposit disputes.
 
-### Frontend (`frontend/`)
-- **React + TypeScript** with Vite
-- Plain CSS (no Tailwind)
-- Chat interface with case summary panel
+The prototype focuses on the Uttarakhand Tenancy Act, 2021 (Uttarakhand Act No. 02 of 2022) and a curated legal knowledge base containing relevant provisions, applicability conditions, qualifications, source references and unresolved legal questions.
 
-### Directory Structure
+Rather than attempting to cover all Indian law, the project concentrates on one specific problem: helping tenants understand their position when a landlord withholds a residential security deposit.
+
+The system does not automatically assume that the Act applies to every tenancy in Uttarakhand. Applicability depends on relevant facts and statutory conditions.
+
+## 2. Key Features
+
+1\. Conversational Case Intake: Users describe their dispute naturally. The system extracts details such as rent, deposit, agreement terms, dates and evidence, and asks follow-up questions for missing information.
+
+2\. Structured Case Management: Cases and conversations are persisted in SQLite. Fact provenance distinguishes user-confirmed information from model-extracted facts, while conflicting details are flagged for confirmation.
+
+3\. Retrieval-Grounded Legal Q&A: Retrieves relevant Uttarakhand tenancy provisions using hybrid search and generates structured answers with legal reasoning, qualifications and recommended next steps.
+
+4\. Legal Grounding and Abstention: Enforces Uttarakhand jurisdiction server-side, validates citations and flags unsupported legal claims. The system can ask for clarification or abstain when information is insufficient.
+
+5\. LLM Provider Abstraction: Supports Gemini and a mock provider through a common interface, allowing model replacement and deterministic testing.
+
+6\. Document Preparation (Partial): Backend support for legal notice requirements, applicability checks and draft persistence exists, but the complete user-facing generation workflow is not yet reliable.
+
+## 3. System Architecture
+
 ```
-backend/
-  app/
-    main.py              # FastAPI app entry point
-    api/
-      cases.py           # Case CRUD endpoints
-      chat.py            # Chat/intake endpoints
-      deps.py            # Dependency injection
-    orchestrator/
-      workflow.py        # Intake workflow orchestration
-    agents/
-      intake.py          # Intake agent with LLM integration
-    services/
-      case_service.py    # Case database operations
-      conversation_service.py  # Conversation/message operations
-    schemas/
-      case.py            # Case Pydantic schemas
-      conversation.py    # Conversation/chat Pydantic schemas
-    database/
-      connection.py      # SQLAlchemy connection
-      models.py          # DB models (Case, Conversation, Message)
-    llm/
-      provider.py        # LLM provider interface
-      gemini_provider.py # Gemini implementation
-    core/
-      config.py          # Application settings
-  tests/
-    test_cases.py        # Case API tests
-    test_intake.py       # Intake agent tests
-    test_conversation.py # Conversation persistence tests
-    test_workflow.py     # Workflow orchestration tests
-    mock_provider.py     # Mock LLM provider for tests
-frontend/
-  src/
-    components/          # React components
-    pages/               # Page components
-    services/            # API service layer
-    types/               # TypeScript type definitions
-```
+flowchart TD
+    U["User"] --> UI["React + TypeScript"]
+    UI --> API["FastAPI Backend"]
 
-## Installation
+    API --> INTAKE["Conversational Intake"]
+    INTAKE --> LLM["Gemini / Mock Provider"]
+    LLM --> FACTS["Fact Extraction & Validation"]
+    FACTS --> DB[("SQLite Case Database")]
+    FACTS --> FOLLOW["Follow-up Questions"]
+    FOLLOW --> UI
 
-### Backend
+    UI --> QA["Legal Q&A Service"]
+    DB --> QA
+    QA --> RET["Hybrid Retrieval"]
+    RET --> KEY["Keyword Search"]
+    RET --> VEC["Vector Search"]
+    KEY --> RRF["Reciprocal Rank Fusion"]
+    VEC --> RRF
+    RRF --> KB[("ChromaDB Knowledge Base")]
 
-```bash
-cd /home/smit-bafna/Projects/kuku/backend
-cp .env.example .env
-# Edit .env and set GEMINI_API_KEY if you want to use the real Gemini API
-pip install -r requirements.txt
+    QA --> PROMPT["Grounded Prompt"]
+    RRF --> PROMPT
+    PROMPT --> LLM
+    LLM --> CHECK["Grounding Validation"]
+    CHECK --> DEC{"Reliable?"}
+    DEC -->|Yes| ANS["Legal Answer"]
+    DEC -->|Clarification| CLARIFY["Ask Follow-up"]
+    DEC -->|Unsupported| ABSTAIN["Abstain"]
+    ANS --> UI
+    CLARIFY --> UI
+    ABSTAIN --> UI
 ```
 
-### Frontend
+The React frontend communicates with a FastAPI modular backend. SQLite stores case information, while ChromaDB stores the indexed legal knowledge base.
 
-```bash
-cd /home/smit-bafna/Projects/kuku/frontend
-npm install
-```
+## 4. Working Approach
 
-## Running
+The system combines deterministic backend logic with LLM-based natural-language processing.
 
-### Backend
+1. Intake: Users describe their dispute conversationally. Gemini extracts structured facts and generates follow-up questions.
+2. Fact Management: Backend logic validates updates, detects conflicts, tracks fact provenance and persists information in SQLite.
+3. Legal Retrieval: The user's question is searched against the Uttarakhand legal knowledge base using keyword and vector retrieval.
+4. Answer Generation: Retrieved provisions, qualifications, case facts and the user's question are passed to Gemini.
+5. Grounding Validation: Backend checks verify citations and flag unsupported legal claims. The system returns an answer, requests clarification or abstains.
 
-```bash
-cd /home/smit-bafna/Projects/kuku/backend
-python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
+Code vs. LLM: Code handles persistence, fact-update rules, jurisdiction enforcement, retrieval, validation and workflow decisions. The LLM handles natural-language understanding, fact extraction, follow-up questions and legal explanations. Legal interpretation remains partly model-dependent.
 
-The API will be available at `http://localhost:8000`. Health check: `GET /health`
+## 5. RAG Implementation
 
-### Frontend
+The retrieval-augmented generation pipeline grounds legal answers in a curated knowledge base instead of relying entirely on the LLM's pretrained knowledge.
 
-```bash
-cd /home/smit-bafna/Projects/kuku/frontend
-npm run dev
-```
+### Knowledge Ingestion and Indexing
 
-The frontend will be available at `http://localhost:3000`. It proxies `/api` requests to `http://localhost:8000`.
+- Legal material is maintained in curated Markdown files covering provisions, applicability, qualifications and source references.
+- A custom Markdown parser extracts structured provision information.
+- Provisions are validated before indexing to exclude incomplete, unverified or unsupported records.
+- Each valid provision is indexed as a separate chunk in ChromaDB.
+- MiniLM-L6-v2 generates 384-dimensional embeddings for semantic retrieval.
 
-## API Endpoints
+### Hybrid Retrieval
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/cases` | Create a new case (status: `intake_in_progress`) |
-| GET | `/cases/{case_id}` | Get current structured case |
-| PATCH | `/cases/{case_id}` | Update case facts |
-| POST | `/cases/{case_id}/chat` | Send a message and run intake workflow |
-| GET | `/cases/{case_id}/messages` | Get conversation history |
+The system combines two independent retrieval methods:
 
-### POST /cases
-Response: Case object with `id`, `case_type`, `status`, etc.
+- Keyword Search: Searches provision identifiers, sections, legal propositions and qualifications.
+- Vector Search: Uses query embeddings to retrieve semantically similar provisions from ChromaDB.
+- Reciprocal Rank Fusion: Combines the two rankings using:
 
-### POST /cases/{case_id}/chat
-Request: `{ "message": "string" }`
-Response: `{ "assistant_message", "updated_case", "missing_information", "intake_status" }`
+\\[ RRF(d)=\frac{1}{k+rank(d)} \\]
 
-## Testing
+The implementation uses \\(k=60\\), deduplicates results and produces a combined ranking.
 
-```bash
-cd /home/smit-bafna/Projects/kuku/backend
-python3 -m pytest tests/ -v --asyncio-mode=auto
-```
+### Grounded Answer Generation
 
-Tests use a mock LLM provider and do not require a Gemini API key. All 17 tests pass.
+The top retrieved provisions, including their qualifications, are passed to Gemini along with the user's question and case facts.
 
-## Environment Variables
+Gemini generates a structured legal response containing the legal position, applicable provisions, reasoning, limitations and recommended next steps.
 
-See `.env.example` for required variables:
-- `GEMINI_API_KEY` - Your Gemini API key (optional for tests, required for real LLM)
-- `GEMINI_MODEL` - Gemini model name (default: `gemini-1.5-flash`)
-- `DATABASE_URL` - SQLite database URL (default: `sqlite:///./app.db`)
+A deterministic validation layer checks whether cited provisions exist in the retrieved context and flags unsupported statutory references, deadlines and material claims. Where grounding is insufficient, the system can clarify or abstain.
 
-## Completion Criteria (M1)
+Implementation stack:
 
-1. ✅ Backend starts successfully
-2. ✅ Frontend starts successfully
-3. ✅ User can create a case
-4. ✅ User can describe a dispute in natural language
-5. ✅ System extracts structured facts
-6. ✅ System asks relevant follow-up questions
-7. ✅ Case is updated across multiple turns
-8. ✅ Conversation history persists in SQLite
-9. ✅ Case summary updates in the frontend
-10. ✅ All automated tests pass
-11. ✅ README contains installation and execution instructions
-12. ✅ `.env.example` documents required environment variables
+| Component         | Technology                      |
+| ----------------- | ------------------------------- |
+| Knowledge parsing | Custom Markdown parser          |
+| Embeddings        | MiniLM-L6-v2                    |
+| Vector database   | ChromaDB                        |
+| Keyword retrieval | Custom provision-level search   |
+| Hybrid ranking    | Reciprocal Rank Fusion          |
+| LLM               | Gemini 3.1 Flash Lite           |
+| Validation        | Pydantic + deterministic checks |
 
+## 6. Evaluation and Quality Checks
 
-## M1.2 Reliability and Data Integrity Notes
+Evaluation focused on retrieval relevance, jurisdiction correctness, backend reliability and grounded answer generation.
 
-- Fact corrections: the intake agent distinguishes explicit user corrections
-  (`corrections`) from ordinary new information (`extracted_updates`). Conflicting
-  values preserve the existing fact and are reported in `confirmation_needed`
-  until the user confirms.
-- Fact provenance: each fact records `source` (`model` or `user`),
-  `confirmed` (boolean), and `turn`. Existing SQLite records without
-  provenance are treated as having an empty provenance map.
-- Atomic persistence: a chat turn reads the case, calls the LLM outside any
-  transaction, then persists the user message, updated facts, and assistant
-  message in a single transaction. A failed LLM call leaves no orphaned
-  message or partial fact update. Optimistic versioning rejects concurrent
-  conflicting updates with HTTP 409.
-- LLM reliability: the Gemini provider uses a bounded timeout, retries bounded
-  retryable failures (HTTP 429 / 503) with exponential backoff, and does not
-  retry timeouts, invalid JSON, or schema-validation failures.
-- Authentication/authorization: none. This application is a single-user /
-  local-prototype only and must not be deployed on an untrusted or multi-user
-  network. CORS is restricted to the local frontend origins
-  (`http://localhost:3000`, `http://127.0.0.1:3000`).
+| Metric                                           | Result |
+| ------------------------------------------------ | ------ |
+| Authored retrieval test cases                    | 15     |
+| Quantitatively testable cases                    | 7      |
+| Recall\@5                                        | 0.71   |
+| Precision\@5                                     | 0.57   |
+| MRR                                              | 0.65   |
+| Cases retrieving at least one relevant provision | 6/7    |
+| Correct jurisdiction filtering                   | 7/7    |
 
-## Known Limitations
+Additional testing:
 
-- Only supports `security_deposit_dispute` case type
-- No RAG, legal research, or document generation (out of scope for M1)
-- LLM integration requires a Gemini API key for real usage (mock provider for tests)
-- Frontend is minimal and functional without animations or visual polish
-- Hindi translation and voice input not implemented
-- No authentication or authorization; single-user/local-prototype only
-## M2.1B — Legal Knowledge Base
+- Legal-answer tests: 14/14 passed.
+- Backend regression tests: 56/56 passed in the reported test run.
+- Grounding checks: Tested rejection of citations absent from retrieved context and handling of unsupported legal claims.
 
-The `M2.1B/` directory contains the legal research knowledge base for tenant-landlord
-security-deposit disputes in India:
+Only seven of the fifteen retrieval cases were sufficiently annotated for quantitative evaluation. These results demonstrate behaviour on the tested set, not legal correctness across all possible disputes.
 
-- `provision_inventory.md` — provision-level inventory (central + state/UT statutes)
-- `source_register.md` — source register
-- `state_applicability_table.md` — state/UT applicability table
-- `temporal_metadata.md` — temporal metadata recommendations
-- `evaluation_dataset.md` — clean evaluation dataset (32 cases)
-- `research_notes/` — methodology, verification backlog, open questions
-- `sources/` — cached reference excerpts
+## 7. Limitations and Known Failures
 
-See `M2.1B/INDEX.md` for the full index.
-## Scope Clarification
+- Limited legal coverage: The system focuses on Uttarakhand residential security-deposit disputes. Other jurisdictions and legal domains are outside its verified scope.
+- Unresolved applicability: Rent Authority operational status and statutory exemptions remain unresolved. The system therefore cannot make definitive claims about applicable forums or procedures.
+- Legal interpretation risk: Testing identified confusion between Section 11 subsections and an unsupported reference to a reasonable refund period. Citation membership checks alone cannot guarantee correct legal interpretation.
+- Incomplete document generation: Backend support for legal notice requirements and draft persistence exists, but the complete user-facing generation workflow is not reliable.
+- Unsupported capabilities: PDF/DOCX export, email dispatch, voice interaction, case filing and support for other jurisdictions are not implemented.
 
-This AI Lawyer application is currently **just for Uttarakhand**, not for all of India.
+## 8. Scalability and Future Scope
 
-### Supported Jurisdiction:
-- **Uttarakhand** — Uttarakhand Tenancy Act, 2021 (Act No. 02 of 2022), commenced 01.01.2023
-- Security deposit cap: 2 months rent (residential), 6 months rent (non-residential)
-- Refund on vacant possession after liability deduction
+The modular architecture can be extended by adding separately reviewed and versioned legal knowledge bases for additional jurisdictions, along with jurisdiction-specific applicability rules and evaluation datasets.
 
-### Unsupported Jurisdictions (explicitly marked):
-- Tamil Nadu — Tamil Nadu Regulation of Rights and Responsibilities of Landlords and Tenants Act, 2017
-- Uttar Pradesh — Uttar Pradesh Regulation of Urban Premises Tenancy Act, 2021
-- No other states/UTs are in the supported corpus
+For larger usage, SQLite can be replaced with PostgreSQL, case files can move to object storage, and the API can run across multiple instances. Retrieval and embedding infrastructure can also be scaled independently.
 
-### Technical Implementation:
-- Jurisdiction is **server-enforced** as `'Uttarakhand'` — the API rejects any attempts to override jurisdiction
-- Chroma vector store collection name: `uttarakhand_provisions`
-- All legal provisions are traced to Uttarakhand Gazette (SRC-02)
+These are proposed extensions, not capabilities currently benchmarked.
+
+Human review: AI Lawyer provides preliminary legal information, not a lawyer's opinion. Unresolved applicability, high-stakes disputes or questions outside the verified scope should be referred to a qualified legal professional.
+
+## 9. Technology Stack and Tools
+
+- Frontend: React, TypeScript
+- Backend: Python, FastAPI
+- Database: SQLite, SQLAlchemy
+- RAG: ChromaDB, MiniLM-L6-v2, custom keyword retrieval, RRF
+- LLM: Gemini 3.1 Flash Lite, MockProvider
+- Development tools: ChatGPT, Cline and Gemini
+
+Note: Before submission, include the repository/prototype URL, setup instructions and raw test conversations or outputs as separate deliverables.
