@@ -2,8 +2,8 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from .database.models import Case, Conversation, Message
-from .schemas.conversation import MessageCreate
+from ..database.models import Case, Conversation, Message
+from ..schemas.conversation import MessageCreate
 
 
 def get_or_create_conversation(db: Session, case_id: str) -> Conversation:
